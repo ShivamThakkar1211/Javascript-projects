@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrapper">
+    <div class="typing-text">
+      <p></p>
+    </div>
+    <input type="text" class="input-field" autofocus>
+    <div class="stats">
+      <div class="time">Time Remaining: <span><b>60</b> seconds</span></div>
+      <div class="mistake">Mistakes: <span>0</span></div>
+      <div class="wpm">WPM: <span>0</span></div>
+      <div class="cpm">CPM: <span>0</span></div>
+    </div>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <script>
+    const typingText = document.querySelector(".typing-text p");
+    const input = document.querySelector(".wrapper .input-field");
+    const time = document.querySelector(".time span b");
+    const mistake = document.querySelector(".mistake span");
+    const wpm = document.querySelector(".wpm span");
+    const cpm = document.querySelector(".cpm span");
+
+    let timer;
+    let maxTime = 60;
+    let timeIndex = maxTime;
+    let charIndex = 0;
+    let mist = 0;
+    let wordCount = 0;
+    let charCount = 0;
+
+    function loadParagraph() {
+      const paragraph = [
+        "Our choice of books reflects our personality and our intellect",
+        "Books tell us about new things and enrich our knowledge.",
+        "They open the doors to a beautiful world and quicken our imagination.",
+        "They give us company and drive away our boredom.",
+        "They are friends to the ones who are lonely. They also act as companions to the deserted.",
+        "They brighten our lives by giving joy to the ones who are joyless and give happiness and pleasure. Books are our true friends because they make us better, wiser and happier.",
+      ];
+      const randomIndex = Math.floor(Math.random() * paragraph.length);
+      typingText.innerHTML = '';
+      for (const char of paragraph[randomIndex]) {
+        typingText.innerHTML += `<span>${char}</span>`;
+      }
+      typingText.querySelectorAll('span')[0].classList.add('active');
+    }
+
+    function updateMistake() {
+      mistake.textContent = mist;
+    }
+
+    function updateTime() {
+      time.textContent = timeIndex;
+    }
+
+    function calculateWPM() {
+      const minutes = maxTime / 60;
+      const wpmValue = Math.round(wordCount / minutes);
+      wpm.textContent = wpmValue;
+    }
+
+    function calculateCPM() {
+      const minutes = maxTime / 60;
+      const cpmValue = Math.round(charCount / minutes);
+      cpm.textContent = cpmValue;
+    }
+
+    function initTyping() {
+      const char = typingText.querySelectorAll('span');
+      const typedChar = input.value.charAt(charIndex);
+
+      if (charIndex < char.length && timeIndex > 0) {
+        if (char[charIndex].innerText === typedChar) {
+          char[charIndex].classList.add('correct');
+          charCount++;
+        } else {
+          mist++;
+          char[charIndex].classList.add('incorrect');
+          updateMistake();
+        }
+        charIndex++;
+        const typedValue = input.value.trim();
+        wordCount = typedValue ? typedValue.split(/\s+/).length : 0;
+      } else {
+        clearInterval(timer); // Stop the timer
+        calculateWPM();
+        calculateCPM();
+        input.disabled = true;
+      }
+    }
+
+    function restartGame() {
+      clearInterval(timer);
+      input.value = '';
+      input.disabled = false;
+      timeIndex = maxTime;
+      charIndex = 0;
+      mist = 0;
+      wordCount = 0;
+      charCount = 0;
+      updateMistake();
+      wpm.textContent = 0;
+      cpm.textContent = 0;
+      loadParagraph();
+      timer = setInterval(function() {
+        timeIndex--;
+        updateTime();
+        if (timeIndex <= 0) {
+          clearInterval(timer);
+          input.disabled = true;
+          calculateWPM();
+          calculateCPM();
+        }
+      }, 1000);
+    }
+
+    input.addEventListener("input", initTyping);
+
+    loadParagraph();
+
+    timer = setInterval(function() {
+      timeIndex--;
+      updateTime();
+      if (timeIndex <= 0) {
+        clearInterval(timer);
+        input.disabled = true;
+        calculateWPM();
+        calculateCPM();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
